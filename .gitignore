@@ -1,0 +1,17 @@
+# Segredos e ambiente local (nunca enviar ao GitHub)
+**/.env
+**/.env.local
+**/.env.*.local
+!**/.env.example
+
+# Dependências — reinstale com npm ci ou npm install
+node_modules/
+
+# Logs e cache
+npm-debug.log*
+*.log
+
+# SO / editor (opcional; reduz ruído no git status)
+.DS_Store
+Thumbs.db
+.idea/

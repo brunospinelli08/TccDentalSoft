@@ -3,6 +3,16 @@
  * Lida de forma segura com diferentes páginas
  */
 
+function escapeHtml(s) {
+  if (s == null || s === '') return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 const App = {
     state: {
         sched: { service: '', price: 0, date: '', time: '' }
@@ -289,26 +299,30 @@ const App = {
             empty.classList.add('hidden');
             list.parentElement.classList.remove('hidden');
             
-            apps.forEach(app => {
+            apps.forEach(appt => {
                 const tr = document.createElement('tr');
+                const phoneDigits = String(appt.patient.phone || '').replace(/\D/g, '');
+                const statusLbl = escapeHtml(String(appt.status || '').toUpperCase());
+                const idLit = JSON.stringify(String(appt.id));
+                const descEsc = escapeHtml(appt.description);
                 tr.innerHTML = `
-                    <td><strong>${app.patient.name}</strong></td>
+                    <td><strong>${escapeHtml(appt.patient.name)}</strong></td>
                     <td class="text-sm">
-                        <a href="https://wa.me/55${app.patient.phone.replace(/\D/g,'')}?text=Olá, somos da Clínica!" target="_blank" class="text-success" title="Chamar Whatsapp"><i class="ri-whatsapp-line text-lg"></i></a>
-                        <br>${app.patient.phone}
+                        <a href="https://wa.me/55${phoneDigits}?text=${encodeURIComponent('Olá, somos da Clínica!')}" target="_blank" rel="noopener noreferrer" class="text-success" title="Chamar Whatsapp"><i class="ri-whatsapp-line text-lg"></i></a>
+                        <br>${escapeHtml(appt.patient.phone)}
                     </td>
-                    <td>${app.service.name}<br><strong class="text-gray">R$ ${app.service.price.toFixed(2)}</strong>
-                        ${app.description ? `<br><span class="text-xs text-gray opacity-70 italic block mt-1"><i class="ri-sticky-note-line"></i> ${app.description}</span>` : ''}
+                    <td>${escapeHtml(appt.service.name)}<br><strong class="text-gray">R$ ${escapeHtml(Number(appt.service.price || 0).toFixed(2))}</strong>
+                        ${appt.description ? `<br><span class="text-xs text-gray opacity-70 italic block mt-1"><i class="ri-sticky-note-line"></i> ${descEsc}</span>` : ''}
                     </td>
-                    <td>${app.date}<br><strong>${app.time}</strong></td>
-                    <td><span class="status-badge status-${app.status}">${app.status.toUpperCase()}</span></td>
+                    <td>${escapeHtml(appt.date)}<br><strong>${escapeHtml(appt.time)}</strong></td>
+                    <td><span class="status-badge status-${escapeHtml(appt.status)}">${statusLbl}</span></td>
                     <td>
                         <div class="flex gap-2">
-                            <button class="btn btn-sm btn-secondary mb-2 bg-light text-success flex-1" style="border-color: var(--success);" onclick="App.changeStatus('${app.id}', 'confirmada')" title="Confirmar"><i class="ri-check-line"></i></button>
-                            <button class="btn btn-sm btn-secondary mb-2 text-danger flex-1" style="border-color: var(--danger)" onclick="App.changeStatus('${app.id}', 'cancelada')" title="Cancelar"><i class="ri-close-line"></i></button>
-                            <button class="btn btn-sm mb-2 text-gray flex-1 bg-light border-y border-l border-r" onclick="App.adminDeleteAppointment('${app.id}')" title="Excluir Permanentemente"><i class="ri-delete-bin-line"></i></button>
+                            <button type="button" class="btn btn-sm btn-secondary mb-2 bg-light text-success flex-1" style="border-color: var(--success);" onclick="App.changeStatus(${idLit}, 'confirmada')" title="Confirmar"><i class="ri-check-line"></i></button>
+                            <button type="button" class="btn btn-sm btn-secondary mb-2 text-danger flex-1" style="border-color: var(--danger)" onclick="App.changeStatus(${idLit}, 'cancelada')" title="Cancelar"><i class="ri-close-line"></i></button>
+                            <button type="button" class="btn btn-sm mb-2 text-gray flex-1 bg-light border-y border-l border-r" onclick="App.adminDeleteAppointment(${idLit})" title="Excluir Permanentemente"><i class="ri-delete-bin-line"></i></button>
                         </div>
-                        <button class="btn btn-sm bg-dark text-white w-full" onclick="App.changeStatus('${app.id}', 'concluida')">Marcar Paga</button>
+                        <button type="button" class="btn btn-sm bg-dark text-white w-full" onclick="App.changeStatus(${idLit}, 'concluida')">Marcar Paga</button>
                     </td>
                 `;
                 list.appendChild(tr);
@@ -351,19 +365,22 @@ const App = {
             patients.sort((a,b) => new Date(b.registeredAt) - new Date(a.registeredAt)).forEach(p => {
                 const dateObj = new Date(p.registeredAt);
                 const pDate = `${('0'+dateObj.getDate()).slice(-2)}/${('0'+(dateObj.getMonth()+1)).slice(-2)}/${dateObj.getFullYear()}`;
-                
+                const phoneDigits = String(p.phone || '').replace(/\D/g, '');
+                const waText = encodeURIComponent(`Olá ${p.name}, somos da AFA Odontologia!`);
+                const idLit = JSON.stringify(String(p.id));
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="text-xs text-gray-400 font-bold">${p.id || '---'}</td>
-                    <td><strong class="text-dark">${p.name}</strong></td>
+                    <td class="text-xs text-gray-400 font-bold">${escapeHtml(p.id != null ? p.id : '---')}</td>
+                    <td><strong class="text-dark">${escapeHtml(p.name)}</strong></td>
                     <td>
-                        <a href="https://wa.me/55${p.phone.replace(/\D/g,'')}?text=Olá ${p.name}, somos da AFA Odontologia!" target="_blank" class="text-success mr-2" title="Chamar Whatsapp"><i class="ri-whatsapp-line text-lg"></i></a>
-                        ${p.phone}
+                        <a href="https://wa.me/55${phoneDigits}?text=${waText}" target="_blank" rel="noopener noreferrer" class="text-success mr-2" title="Chamar Whatsapp"><i class="ri-whatsapp-line text-lg"></i></a>
+                        ${escapeHtml(p.phone)}
                     </td>
-                    <td class="text-sm">${p.email || 'Não informado'}</td>
-                    <td class="text-sm">${pDate}</td>
+                    <td class="text-sm">${escapeHtml(p.email || 'Não informado')}</td>
+                    <td class="text-sm">${escapeHtml(pDate)}</td>
                     <td>
-                        <select class="input-modern bg-white text-sm py-1" onchange="App.changePatientStatus('${p.id}', this.value)" style="min-width: 120px; padding: 0.5rem;">
+                        <select class="input-modern bg-white text-sm py-1" onchange="App.changePatientStatus(${idLit}, this.value)" style="min-width: 120px; padding: 0.5rem;">
                             <option value="pendente" ${(!p.status || p.status === 'pendente') ? 'selected' : ''}>Pendente</option>
                             <option value="atendido" ${p.status === 'atendido' ? 'selected' : ''}>Atendido</option>
                             <option value="concluido" ${p.status === 'concluido' ? 'selected' : ''}>Concluído</option>
