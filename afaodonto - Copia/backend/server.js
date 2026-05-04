@@ -6,19 +6,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: 'localhost',
   user: 'root',
   password: '',
-  database: 'AFA'
-});
-
-db.connect((err) => {
-  if (err) {
-    console.error('Erro ao conectar MySQL:', err.message);
-    return;
-  }
-  console.log('Conectado com sucesso ao MySQL AFA!');
+  database: 'AFA',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
 // FUNÇÃO AUXILIAR: Formatar data DD/MM/YYYY para YYYY-MM-DD
@@ -76,7 +71,7 @@ app.get('/api/consultas', (req, res) => {
 });
 
 app.post('/api/consultas', (req, res) => {
-  const { service, date, time, patient, description } = req.body;
+  const { service, date, time, patient, description, financials } = req.body;
   
   // 1. Procurar paciente por telefone ou criar novo
   db.query('SELECT id FROM pacientes WHERE telefone = ? OR email = ? LIMIT 1', [patient.phone, patient.email], (err, results) => {
@@ -85,9 +80,10 @@ app.post('/api/consultas', (req, res) => {
     let pacienteId = results.length > 0 ? results[0].id : null;
     
     const finishInsert = (pId) => {
+       const cost = financials?.cost || 0;
        const dataSQL = time ? `${formatDate(date)} ${time}:00` : new Date();
-       const q = `INSERT INTO consultas (pacientes_id, servico_nome, servico_preco, data, status, observacoes) VALUES (?, ?, ?, ?, 'pendente', ?)`;
-       db.query(q, [pId, service?.name || 'Consulta', service?.price || 0, dataSQL, description || ''], (err2, res2) => {
+       const q = `INSERT INTO consultas (pacientes_id, servico_nome, servico_preco, custo_equipamento, data, status, observacoes) VALUES (?, ?, ?, ?, ?, 'pendente', ?)`;
+       db.query(q, [pId, service?.name || 'Consulta', service?.price || 0, cost, dataSQL, description || ''], (err2, res2) => {
          if (err2) return res.status(500).json({ error: err2.message });
          res.json({ success: true, id: res2.insertId });
        });
@@ -126,10 +122,11 @@ app.get('/api/financeiro', (req, res) => {
   const taxRate = 0.15; // 15% 
   
   // Contagens de Consultas
-  db.query("SELECT status, COUNT(*) as qtd, SUM(servico_preco) as valor FROM consultas GROUP BY status", (err1, consStats) => {
+  db.query("SELECT status, COUNT(*) as qtd, SUM(servico_preco) as valor, SUM(custo_equipamento) as custo_eq FROM consultas GROUP BY status", (err1, consStats) => {
       // Contagens de Pacientes
       db.query("SELECT status, COUNT(*) as qtd FROM pacientes GROUP BY status", (err2, pacStats) => {
           let gross = 0;
+          let costs = 0;
           let stats = { pending: 0, confirmed: 0, cancelled: 0 };
           
           consStats.forEach(c => {
@@ -137,6 +134,7 @@ app.get('/api/financeiro', (req, res) => {
              if(c.status === 'confirmada' || c.status === 'concluida') {
                  stats.confirmed += c.qtd;
                  gross += parseFloat(c.valor || 0);
+                 costs += parseFloat(c.custo_eq || 0);
              }
              if(c.status === 'cancelada') stats.cancelled = c.qtd;
           });
@@ -149,11 +147,8 @@ app.get('/api/financeiro', (req, res) => {
              if(st === 'concluido') patientStats.concluido = p.qtd;
           });
           
-          const taxesDeducted = gross * taxRate;
-          const net = gross - taxesDeducted;
-          
           res.json({
-              gross, net, costs: 0, taxesDeducted, taxRate, stats, patientStats
+              gross, costs, stats, patientStats
           });
       });
   });

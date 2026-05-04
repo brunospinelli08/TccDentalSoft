@@ -16,9 +16,9 @@ const Api = {
     login: async function (email, password) {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
-                if (email === 'afaodontologia1@gmail.com' && password === 'admin123') {
+                if (email === 'angelafalmeida@uol.com.br' && password === 'erica34') {
                     localStorage.setItem('auth_token', 'token_seguro_da_dra');
-                    resolve({ success: true, user: { name: 'AFA Odontologia', role: 'admin' } });
+                    resolve({ success: true, user: { name: 'Dra. Angela', role: 'admin' } });
                 } else {
                     resolve({ success: false, message: 'E-mail ou senha incorretos' });
                 }
@@ -145,7 +145,7 @@ const Api = {
             } catch (err) {
                 console.warn('Banco MySQL Offline: Erro no Financeiro');
                 resolve({
-                    gross: 0, net: 0, costs: 0, taxesDeducted: 0, taxRate: 0.15,
+                    gross: 0, costs: 0,
                     stats: { pending: 0, confirmed: 0, cancelled: 0 },
                     patientStats: { pendente: 0, atendido: 0, concluido: 0 },
                     history: []

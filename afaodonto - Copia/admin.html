@@ -23,10 +23,10 @@
                 
                 <form id="login-form" onsubmit="App.handleLogin(event)">
                     <div class="form-group">
-                        <input type="email" id="login-email" class="input-modern w-full" placeholder="E-mail (afaodontologia1@gmail.com)" required>
+                        <input type="email" id="login-email" class="input-modern w-full" placeholder="E-mail" required>
                     </div>
                     <div class="form-group mb-6">
-                        <input type="password" id="login-pass" class="input-modern w-full" placeholder="Senha (admin123)" required>
+                        <input type="password" id="login-pass" class="input-modern w-full" placeholder="Senha" required>
                     </div>
                     <button type="submit" class="btn btn-primary w-full" id="btn-login-submit">Entrar no Sistema</button>
                     <button type="button" class="btn btn-secondary w-full mt-4" onclick="window.location.href='index.html'">Voltar ao Site Público</button>
@@ -63,22 +63,14 @@
                 <div class="flex justify-between align-center mb-6">
                     <h2 class="admin-section-title"><i class="ri-wallet-3-fill"></i> Visão Geral Financeira</h2>
                 </div>
-                <div class="grid-4 gap-6 mb-10">
+                <div class="grid-2 gap-6 mb-10">
                     <div class="admin-card p-6 border-l-4 border-l-primary">
-                        <div class="text-gray text-xs font-bold uppercase mb-2 flex justify-between align-center">Faturamento Bruto <i class="ri-arrow-up-circle-fill text-primary text-lg"></i></div>
+                        <div class="text-gray text-xs font-bold uppercase mb-2 flex justify-between align-center">Pagamento <i class="ri-arrow-up-circle-fill text-primary text-lg"></i></div>
                         <div class="text-3xl font-bold text-dark" id="dash-gross">R$ 0,00</div>
                     </div>
-                    <div class="admin-card p-6 border-l-4 border-l-success">
-                        <div class="text-gray text-xs font-bold uppercase mb-2 flex justify-between align-center">Faturamento Líquido <i class="ri-check-double-line text-success text-lg"></i></div>
-                        <div class="text-3xl font-bold text-success" id="dash-net">R$ 0,00</div>
-                    </div>
                     <div class="admin-card p-6 border-l-4 border-l-warn">
-                        <div class="text-gray text-xs font-bold uppercase mb-2 flex justify-between align-center">Custos (Variável) <i class="ri-tools-fill text-warning text-lg"></i></div>
+                        <div class="text-gray text-xs font-bold uppercase mb-2 flex justify-between align-center">Custo de Equipamento <i class="ri-tools-fill text-warning text-lg"></i></div>
                         <div class="text-3xl font-bold text-warning" id="dash-costs">R$ 0,00</div>
-                    </div>
-                    <div class="admin-card p-6 border-l-4" style="border-left-color: var(--danger)">
-                        <div class="text-gray text-xs font-bold uppercase mb-2 flex justify-between align-center">Impostos (15%) <i class="ri-percent-fill text-danger text-lg"></i></div>
-                        <div class="text-3xl font-bold text-danger" id="dash-taxes">R$ 0,00</div>
                     </div>
                 </div>
 

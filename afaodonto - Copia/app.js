@@ -267,16 +267,12 @@ const App = {
 
         const finances = await Api.getFinancialReport();
         dashGross.innerText = `R$ ${finances.gross.toFixed(2).replace('.', ',')}`;
-        document.getElementById('dash-net').innerText = `R$ ${finances.net.toFixed(2).replace('.', ',')}`;
         
         const countDash = document.getElementById('dash-count');
         if(countDash) countDash.innerText = finances.stats.pending + finances.stats.confirmed;
 
         const dashCosts = document.getElementById('dash-costs');
         if(dashCosts) dashCosts.innerText = `R$ ${finances.costs.toFixed(2).replace('.', ',')}`;
-
-        const dashTaxes = document.getElementById('dash-taxes');
-        if(dashTaxes) dashTaxes.innerText = `R$ ${finances.taxesDeducted.toFixed(2).replace('.', ',')}`;
         
         // Handle Chart JS rendering safely
         this.renderAdminChart(finances);
